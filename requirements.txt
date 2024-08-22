@@ -1,0 +1,23 @@
+-e git+ssh://git@git.rz.tu-bs.de/l.de-jong/fgpcpublic.git@43b751ada517bdb5db65547d52d93ebc83124b3b#egg=cellBiologyFgPC&subdirectory=cellBiologyFgPC
+chaospy==4.3.16
+ConfigArgParse==1.7
+contourpy==1.1.1
+cycler==0.12.1
+-e git+ssh://git@git.rz.tu-bs.de/l.de-jong/fgpcpublic.git@43b751ada517bdb5db65547d52d93ebc83124b3b#egg=duffingFgPC&subdirectory=duffingFgPC
+-e git+ssh://git@git.rz.tu-bs.de/l.de-jong/fgpcpublic.git@43b751ada517bdb5db65547d52d93ebc83124b3b#egg=fgPC&subdirectory=FgPC
+fonttools==4.53.1
+importlib_metadata==8.2.0
+importlib_resources==6.4.0
+kiwisolver==1.4.5
+matplotlib==3.7.5
+numpoly==1.2.13
+numpy==1.24.4
+packaging==24.1
+pillow==10.4.0
+pkg_resources==0.0.0
+pyparsing==3.1.2
+python-dateutil==2.9.0.post0
+PyYAML==6.0.1
+scipy==1.10.1
+six==1.16.0
+zipp==3.19.2

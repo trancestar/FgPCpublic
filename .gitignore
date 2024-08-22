@@ -1,0 +1,15 @@
+2_calculatedData/convSampling/*
+2_calculatedData/preCalcData/*
+2_calculatedData/solutionSampling/*
+2_calculatedData/variableSampling/*
+3_results/*
+
+**/__pycache__/
+
+venvfgpcpublic/*
+
+.vscode
+
+*.egg-info
+*.pycgit
+

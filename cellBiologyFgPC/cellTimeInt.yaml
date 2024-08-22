@@ -1,0 +1,11 @@
+V_0: -40 # initial membrane potential
+n_0: 0.0042 # initial value of delayed rectifier activation of potassium current
+Ca_0: 0.19 # initial value of calcium concentration
+t0: 0 # start time
+t_end_tr: 3 # end time of transient process
+t_step_tr: 0.1 # time step of transient process
+t_end_ss: 24 # end time of steady state process
+t_step_ss: 500 # time step of steady state process
+fftMinVal: 0.001 # minimum value for FFT
+fftHighFreq: 500 # high frequency for FFT
+fftDist: 50 # distance of block for FFT

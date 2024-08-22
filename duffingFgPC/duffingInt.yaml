@@ -1,0 +1,13 @@
+alpha: 1 # linear stiffness
+beta: 1 # nonlinear stiffness 
+delta: 0.08 # damping coefficient
+gamma: 0.2 # amplitude of the periodic driving force
+omega: 1.4 # frequency of the periodic driving force
+x0: 0.1 # initial displacement
+xt0: 0.5 # initial velocity
+t0: 0.0 # start time
+tE: 100.0 # end time
+dt: 0.1 # time step
+fftMinVal: 0.01 # minimum value for FFT
+fftHighFreq: 10 # high frequency for FFT
+fftDist: 50 # distance of block for FFT

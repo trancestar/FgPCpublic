@@ -1,0 +1,8 @@
+H: 5 # number of harmonics
+nPt: 1000 # number of time points for FFT and iFFT
+ngPC: 12 # number of generalized polynomial chaos terms
+nQPt: 100 # number of quadrature points for PC coefficients
+distStr: 'beta' # distribution for random variables
+low: 0.8 # lower bound for random variable
+high: 1.2 # upper bound for random variable
+sampleNr: 1000000 # number of samples for Monte Carlo
