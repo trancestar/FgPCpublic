@@ -2,7 +2,7 @@
 <!-- [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) 
 [![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)-->
-
+[![DOI](https://zenodo.org/badge/845916091.svg)](https://zenodo.org/doi/10.5281/zenodo.13359869)
 
 # Fourier generalized Polynomial Chaos Framework
 
