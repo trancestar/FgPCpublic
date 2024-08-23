@@ -41,11 +41,7 @@ tag = "Electric"
 tagList = [tag]
 
 # set path where to store results
-# myResultPath = os.path.realpath(__file__) # use this when storing in same folder
-if os.name == 'nt':
-    myResultPath = "C:/Users/menzel/Nextcloud/Promotion-Letsgo!/Codeentwicklung/FgPCpublic/"
-elif os.name == 'posix':
-    myResultPath = "/home/menzel/fgpcpublic/"
+myResultPath = os.path.realpath(__file__) # use this when storing in same folder
 
 saveResultsPath = myResultPath + "3_results/"
 
