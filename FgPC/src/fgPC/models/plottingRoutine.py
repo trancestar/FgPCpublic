@@ -514,7 +514,8 @@ class plottingRoutine:
 
             coeffPlot = ImagePlot(coeffs.T, xlabel, r"polynomial degree $N$",
                                   cbarLabel = r"$\sqrt{a_{km}^2 + b_{km}^2}$",
-                                  barScale = ["log", minVal, maxVal])
+                                  barScale = ["log", minVal, maxVal],
+                                  gridBoundary = True)
             
             coeffPlot.xticksList = xticksList
             coeffPlot.xticksLabelList = xticksLabelList
@@ -599,6 +600,12 @@ class plottingRoutine:
             xticksLabelList.append(str(i))
             xticksList.append(i-1)
 
+        yticksList = []
+        yticksLabelList = []
+        for i in range(0,errorMat.shape[1],2):
+            yticksLabelList.append(str(i))
+            yticksList.append(i)
+
         errorMat = np.nan_to_num(errorMat, nan = 0)
         if np.min(errorMat) == 0:
             mask_errorMat = errorMat[errorMat != 0]
@@ -611,10 +618,13 @@ class plottingRoutine:
 
         erorPlot = ImagePlot(errorMat.T, xlabel, r"polynomial degree $N$",
                                 cbarLabel = r"$\varepsilon_{km}$",
-                                barScale = ["log",minVal, maxVal])
+                                barScale = ["log",minVal, maxVal],
+                                gridBoundary = True)
         
         erorPlot.xticksList = xticksList
         erorPlot.xticksLabelList = xticksLabelList
+        erorPlot.yticksList = yticksList
+        erorPlot.yticksLabelList = yticksLabelList
 
         plotter.plot(erorPlot,
                         filename= tag + "_errorMap",
@@ -648,6 +658,12 @@ class plottingRoutine:
             xticksLabelList.append(str(i))
             xticksList.append(i-1)
 
+        yticksList = []
+        yticksLabelList = []
+        for i in range(0,errorTensor.shape[2],2):
+            yticksLabelList.append(str(i))
+            yticksList.append(i-1)
+
         for i in range(errorTensor.shape[0]):
 
             errorMat = errorTensor[i,:,:]
@@ -663,10 +679,13 @@ class plottingRoutine:
 
             erorPlot = ImagePlot(errorMat.T, xlabel, r"Polynomial degree $N$",
                                  cbarLabel = r"$\varepsilon_{km}$",
-                                 barScale = ["log",minVal, maxVal])
+                                 barScale = ["log",minVal, maxVal],
+                                 gridBoundary = True)
             
             erorPlot.xticksList = xticksList
             erorPlot.xticksLabelList = xticksLabelList
+            erorPlot.yticksList = yticksList
+            erorPlot.yticksLabelList = yticksLabelList
 
             plotter.plot(erorPlot,
                          filename= varList[i] + "_errorMap",
