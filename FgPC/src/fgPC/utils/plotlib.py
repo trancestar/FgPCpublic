@@ -201,6 +201,12 @@ class ImagePlot(Axes2D):
                 self.img_kwargs["vmax"] = vmaxVal
             self.img_kwargs.pop('barScale')
 
+        if 'gridBoundary' in self.img_kwargs:
+            self.gridBoundary = self.img_kwargs["gridBoundary"]
+            self.img_kwargs.pop('gridBoundary')
+        else:
+            self.gridBoundary = None
+
     def plot(self, ax):
 
         self.set_default_img_kwargs()
@@ -213,6 +219,15 @@ class ImagePlot(Axes2D):
        
         ax = self.set_2D_ax_properties(ax)
 
+        if self.gridBoundary is not None:
+            ax.set_xticks(np.arange(-0.5, self.image.shape[1], 1), minor=True)
+            ax.set_yticks(np.arange(-0.5, self.image.shape[0], 1), minor=True)
+
+            ax.grid(False)
+            ax.grid(which='minor', color='white', linestyle='-', linewidth=2)
+
+            ax.tick_params(which='major', size=0)
+        
         return ax
     
 class PlotData():
