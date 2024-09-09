@@ -75,7 +75,7 @@ class BetaCellInitModel(InitialGuessFunctions):
 
         # get intial guess for value
         strVal = '{:.3e}'.format(val)
-        strFolder = resultFolder + "3_calculatedData/preCalcData/" 
+        strFolder = resultFolder + "2_calculatedData/preCalcData/" 
         
         initialGuess, amp_s1 = self.calcAndGetData(tag, 
                                                    strVal,
