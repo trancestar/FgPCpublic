@@ -74,7 +74,7 @@ class DuffingInitModel(InitialGuessFunctions):
             tagList = [tagIn]
 
         strVal = '{:.1e}'.format(val)
-        strFolder = resultFolder + "3_calculatedData/preCalcData/" 
+        strFolder = resultFolder + "2_calculatedData/preCalcData/" 
 
         initialGuessList = []
         for tag in tagList:
