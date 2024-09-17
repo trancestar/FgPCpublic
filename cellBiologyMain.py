@@ -277,7 +277,7 @@ xticksList = [
     [r"$0$", r"$\pi/2$", r"$\pi$", r"$3/2 \pi$", r"$2\pi$"]
 ]
 distrList = [sampleStr,"ATP"]
-varListScale = [r"$V$ in $mV$", r"$n$ in $-$", r"$Ca$ in $mM$"]
+varListScale = [r"$V$ in mV", r"$n$ in [-]", r"$Ca$ in mM"]
 confCoverageStr = str(int(confCoverage*100))
 figSize = (7,5)
 
