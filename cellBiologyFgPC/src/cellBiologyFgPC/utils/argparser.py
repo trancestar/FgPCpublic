@@ -2,7 +2,7 @@ import os
 import shutil
 import configargparse
 
-def get_config_FgPC(config_file, result_folder, logger = None):
+def get_config_FgPC(config_file, result_folder = None, logger = None):
 
     p = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     p.add('-c', default = config_file, is_config_file=True, help='config file path')
@@ -20,12 +20,13 @@ def get_config_FgPC(config_file, result_folder, logger = None):
     if logger is not None: logger.info("User input (cmd > config > default): \n" + p.format_values())    
 
     # Copy config file to result path
-    config_filename = os.path.basename(config_file)
-    shutil.copy(config_file, result_folder + "/" + config_filename)
+    if result_folder is not None:
+        config_filename = os.path.basename(config_file)
+        shutil.copy(config_file, result_folder + "/" + config_filename)
 
     return config
 
-def get_config_Integration(config_file, result_folder, logger = None):
+def get_config_Integration(config_file, result_folder = None, logger = None):
 
     p = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     p.add('-c', default = config_file, is_config_file=True, help='config file path')
@@ -47,7 +48,8 @@ def get_config_Integration(config_file, result_folder, logger = None):
     if logger is not None: logger.info("User input (cmd > config > default): \n" + p.format_values())    
 
     # Copy config file to result path
-    config_filename = os.path.basename(config_file)
-    shutil.copy(config_file, result_folder + "/" + config_filename)
+    if result_folder is not None:
+        config_filename = os.path.basename(config_file)
+        shutil.copy(config_file, result_folder + "/" + config_filename)
 
     return config
