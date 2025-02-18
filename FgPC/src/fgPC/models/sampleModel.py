@@ -353,7 +353,7 @@ class samplingModel():
                        nrEvalPts: int, 
                        nrVar: int, 
                        samplingTimeIdxList: list,
-                       confidence: float = 0.95,
+                       confidence: float = 95,
                        forced: bool = False):
         r"""
         Method to calculate the stochastics of the FgPC and MC models
@@ -400,6 +400,8 @@ class samplingModel():
         diffStochasticList = []
         FgPCsamplingList = []
         mcsamplingList = []
+        diffMinMaxList = []
+        posVelFgPCList = []
         for FgPCResults, mcResults in zip(FgPCResultList,mcResultList):
 
             posFgPC = np.zeros((FgPCResults.shape[0],nrEvalPts*nrVar))
@@ -446,8 +448,19 @@ class samplingModel():
             diffStochastics = []
             FgPCSolSampling = []
             mcSolSampling = []
+            diffMinMax = []
+            posVelFgPC = []
+            randomIdx = np.random.choice(int(posFgPC.shape[0]),size=int(posFgPC.shape[0]//100),replace=False)
+            randomIdx.sort()
 
             for i in range(nrVar):
+                posFgPCVar = posFgPC[:,nrEvalPts*i:nrEvalPts*(i+1)]
+                velFgPCVar = velFgPC[:,nrEvalPts*i:nrEvalPts*(i+1)]
+                posVelFgPC.append([posFgPCVar[randomIdx,:],
+                                   velFgPCVar[randomIdx,:]])
+                
+                posmcVar = posmc[:,nrEvalPts*i:nrEvalPts*(i+1)]
+                velmcVar = velmc[:,nrEvalPts*i:nrEvalPts*(i+1)]
 
                 FgPCSolVarSampling = []
                 mcSolVarSampling = []
@@ -457,38 +470,28 @@ class samplingModel():
                 FgPCSolSampling.append(FgPCSolVarSampling)
                 mcSolSampling.append(mcSolVarSampling)
             
-            
-                posMeanFgPC = np.zeros((nrEvalPts,))
-                velMeanFgPC = np.zeros((nrEvalPts,))
-                posConfLowFgPC = np.zeros((nrEvalPts,))
-                posConfUpFgPC = np.zeros((nrEvalPts,))
-                velConfLowFgPC = np.zeros((nrEvalPts,))
-                velConfUpFgPC = np.zeros((nrEvalPts,))
-                posMeanMC = np.zeros((nrEvalPts,))
-                velMeanMC = np.zeros((nrEvalPts,))
-                posConfLowMC = np.zeros((nrEvalPts,))
-                posConfUpMC = np.zeros((nrEvalPts,))
-                velConfLowMC = np.zeros((nrEvalPts,))
-                velConfUpMC = np.zeros((nrEvalPts,))
-                
-                for j in range(nrEvalPts):
-                    curposFgPC = posFgPC[:,nrEvalPts*i+j]
-                    curvelFgPC = velFgPC[:,nrEvalPts*i+j]
 
-                    curposmc = posmc[:,nrEvalPts*i+j]
-                    curvelmc = velmc[:,nrEvalPts*i+j]
+                posMeanFgPC = np.mean(posFgPCVar, axis=0)
+                velMeanFgPC = np.mean(velFgPCVar, axis=0)
+                posConfLowFgPC = np.percentile(posFgPCVar, (100-confidence)/2, axis=0)
+                posConfUpFgPC = np.percentile(posFgPCVar, 100-(100-confidence)/2, axis=0)
+                velConfLowFgPC = np.percentile(velFgPCVar, (100-confidence)/2, axis=0)
+                velConfUpFgPC = np.percentile(velFgPCVar, 100-(100-confidence)/2, axis=0)
 
-                    posMeanFgPC[j], velMeanFgPC[j], \
-                        posConfLowFgPC[j], posConfUpFgPC[j], \
-                            velConfLowFgPC[j], velConfUpFgPC[j] = \
-                                self.getMeanConfidencePosVel(curposFgPC,curvelFgPC,
-                                                             confidence=confidence)
-                
-                    posMeanMC[j], velMeanMC[j], \
-                        posConfLowMC[j], posConfUpMC[j], \
-                            velConfLowMC[j], velConfUpMC[j] = \
-                                self.getMeanConfidencePosVel(curposmc,curvelmc,
-                                                             confidence=confidence)
+                posMeanMC = np.mean(posmcVar, axis=0)
+                velMeanMC = np.mean(velmcVar, axis=0)
+                posConfLowMC = np.percentile(posmcVar, (100-confidence)/2, axis=0)
+                posConfUpMC = np.percentile(posmcVar, 100-(100-confidence)/2, axis=0)
+                velConfLowMC = np.percentile(velmcVar, (100-confidence)/2, axis=0)
+                velConfUpMC = np.percentile(velmcVar, 100-(100-confidence)/2, axis=0)
+
+                dissPos = np.abs(posFgPCVar-posmcVar)
+                dissVel = np.abs(velFgPCVar-velmcVar)
+                posDiffMin = np.min(dissPos, axis=0)
+                posDiffMax = np.max(dissPos, axis=0)
+                velDiffMin = np.min(dissVel, axis=0)
+                velDiffMax = np.max(dissVel, axis=0)
+
 
                 FgPCVal = [posMeanFgPC,velMeanFgPC,
                             posConfLowFgPC,posConfUpFgPC,
@@ -505,10 +508,17 @@ class samplingModel():
                     diffVal = np.abs(valMC - valFgPC)
                     curdiffStochastics.append(diffVal)
                 diffStochastics.append(curdiffStochastics)
+
+                diffMinMax.append([posDiffMin,posDiffMax,
+                                   velDiffMin,velDiffMax])
                 
             if not forced:
-                omegaMean, _, omegaConfLow, omegaConfUp, _, _ = \
-                    self.getMeanConfidencePosVel(omegaFgPC, confidence=confidence)
+                # omegaMean, _, omegaConfLow, omegaConfUp, _, _ = \
+                #     self.getMeanConfidencePosVel(omegaFgPC, confidence=confidence)
+                omegaMean = np.mean(omegaFgPC)
+                omegaConfLow = np.percentile(omegaFgPC, (100-confidence)/2)
+                omegaConfUp = np.percentile(omegaFgPC, 100-(100-confidence)/2)
+
                 omegaFgPCStochastics = [omegaFgPC, omegaMean, 
                                          omegaConfLow,omegaConfUp]
                 FgPCSolSampling.append(omegaFgPCStochastics)
@@ -519,12 +529,15 @@ class samplingModel():
             diffStochasticList.append(diffStochastics)
             FgPCsamplingList.append(FgPCSolSampling)
             mcsamplingList.append(mcSolSampling)
+            diffMinMaxList.append(diffMinMax)
+            posVelFgPCList.append(posVelFgPC)
             
             if self.logger is not None:
                 self.logger.info("Stochastics: Calculated the stochastics")
         
         return FgPCStochasticList, mcStochasticList, \
-            diffStochasticList, FgPCsamplingList, mcsamplingList
+            diffStochasticList, FgPCsamplingList, mcsamplingList, \
+            diffMinMaxList, posVelFgPCList
 
     def getDynamicSolutions(self, 
                             myFgPCmodel: FgPC,
@@ -563,56 +576,3 @@ class samplingModel():
             velCur = myFgPCmodel.calcVelocity(hbCoeffCompl, myFgPCmodel.E_nh_c_total,
                                                 myFgPCmodel.omega, myFgPCmodel.derMat_c_total)
             return posCur, velCur
-
-    def getMeanConfidencePosVel(self, 
-                                pos: np.ndarray,
-                                vel: np.ndarray = None,
-                                confidence: float = 0.95):
-        r"""
-        Method to calculate the mean and confidence interval of
-        the position and velocity.
-
-        Parameters
-        ----------
-        pos : np.ndarray
-            position over one period
-        vel : np.ndarray (default = None)
-            velocity over one period
-        confidence : float (default = 0.95)
-            gives percentage of samples containing in the sampling interval
-        
-        Returns
-        ----------
-        meanPos : np.ndarray
-            Mean position.
-        meanVel : np.ndarray
-            Mean velocity.
-        confPosLow : np.ndarray
-            Lower bound of confidence interval of the position.
-        confVelLow : np.ndarray
-            Lower bound of confidence interval of the velocity.
-        confPosUp : np.ndarray
-            Upper bound of confidence interval of the position.
-        confVelUp : np.ndarray
-            Upper bound of confidence interval of the velocity.
-        """
-
-        posMean = np.mean(pos, axis=0)
-        
-        n = len(pos)
-        count = int(round(((1-confidence)/2)*n))
-        posConfLow = pos[count-1]
-        posConfUp = pos[-count]
-        
-        if vel is not None:
-            velMean = np.mean(vel, axis=0)
-            
-            velConfLow = vel[count-1]
-            velConfUp = vel[-count]
-        else:
-            velMean = None
-            velConfLow = None
-            velConfUp = None
-
-        return posMean, velMean, posConfLow, posConfUp, velConfLow, velConfUp
-    

@@ -156,13 +156,15 @@ class HistPlot(Axes2D):
         ax.hist(self.y, **self.hist_kwarg)
 
         if self.vline is not None:
-            i = 0
-            for val in self.vline:
-                if i == 0:
-                    coloStr = 'black'
-                    i = 1
-                else:
-                    coloStr = 'red'
+            # i = 0
+            # for val in self.vline:
+            #     if i == 0:
+            #         coloStr = 'black'
+            #         i = 1
+            #     else:
+            #         coloStr = 'red'
+            #     ax.axvline(x = val, color = coloStr, linestyle = '--')
+            for val, coloStr in zip(self.vline[0],self.vline[1]):
                 ax.axvline(x = val, color = coloStr, linestyle = '--')
         
         ax = self.set_2D_ax_properties(ax)
@@ -216,9 +218,9 @@ class ImagePlot(Axes2D):
         if self.cbarLabel is not None:
             cbar = plt.colorbar(cax)
             cbar.set_label(self.cbarLabel)
-       
+        
         ax = self.set_2D_ax_properties(ax)
-
+        
         if self.gridBoundary is not None:
             ax.set_xticks(np.arange(-0.5, self.image.shape[1], 1), minor=True)
             ax.set_yticks(np.arange(-0.5, self.image.shape[0], 1), minor=True)
@@ -227,7 +229,7 @@ class ImagePlot(Axes2D):
             ax.grid(which='minor', color='white', linestyle='-', linewidth=2)
 
             ax.tick_params(which='major', size=0)
-        
+       
         return ax
     
 class PlotData():

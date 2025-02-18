@@ -7,6 +7,7 @@ Description:    Handles the plotting of the results of the FgPC and MC model.
 import numpy as np
 import copy
 import pickle
+import sys
 
 from fgPC.utils.plotlib import Plotter, LinePlot, HistPlot, ImagePlot
 
@@ -23,20 +24,18 @@ class plottingRoutine:
                         curmcResult: list,
                         curFgPCStochastics: list, 
                         curdiffStochastics: list, 
-                        timeVec: np.ndarray, 
-                        idxTime: int, 
+                        timeVec: np.ndarray,
                         histTimeList: list, 
                         samplingTimeIdxList: list, 
-                        coveraStr: str, 
                         plotter: Plotter,
                         varStr: str, 
+                        legendStr: list,
                         figSize: tuple = (16.5, 9),
-                        xlabel: str = "time", 
+                        xlabel: str = r"$t$", 
                         xticksList: list = None,
                         velPlot: bool = False, 
                         diffPlot: bool = False,
-                        sampleStr: list = None,
-                        msize: int = 7):
+                        sampleStr: list = None):
         r"""
         Method takes care of all plotting  
         of each given variable regarding the position over time, 
@@ -58,19 +57,17 @@ class plottingRoutine:
             between the FgPC and MC model over one period
         timeVec : np.ndarray
             time vector with time points over one period
-        idxTime : int
-            index of the time point to be plotted
         histTimeList : list
             list with time points for the marginal distribution
         samplingTimeIdxList : list
             list with the indices for mean, lower and upper bound 
             for the time points of the marginal distribution
-        coveraStr : str
-            string with the coverage of the confidence interval
         plotter : Plotter
             object of the Plotter class to handle the plotting
         varStr : str
             string with the name of the variable to be plotted
+        legendStr : list
+            list with the names of the variables
         figSize : tuple, optional
             size of the figure, by default (16.5, 9)
         xlabel : str, optional
@@ -85,8 +82,6 @@ class plottingRoutine:
         sampleStr : list, optional
             list with sampleStr and the uncertain variable string
             for the input distribution, by default None
-        msize : int, optional
-            size of the markers, by default 7
         """
 
         # plot time plots
@@ -94,12 +89,12 @@ class plottingRoutine:
                                    [curFgPCStochastics[0], 
                                     curFgPCStochastics[2], 
                                     curFgPCStochastics[3]], 
-                                   idxTime, 
-                                   coveraStr,
+                                   [r"$\mathbb{E}[" + legendStr[0]+r"(t,"+ legendStr[1] + ")]$",
+                                    r"$Q_{" + legendStr[0]+r"(t,"+ legendStr[1] + ")}(0.025)$",
+                                    r"$Q_{" + legendStr[0]+r"(t,"+ legendStr[1] + ")}(0.975)$"],
                                    xlabel = xlabel,
                                    xticksList = xticksList,
-                                   ylabel = varStr,
-                                   msize = msize)
+                                   ylabel = varStr)
         
         plotter.plot(xPlots, 
                      filename = varStr[1] + "_posPlots",
@@ -111,12 +106,12 @@ class plottingRoutine:
                                        [curFgPCStochastics[1], 
                                         curFgPCStochastics[4], 
                                         curFgPCStochastics[5]], 
-                                       idxTime, 
-                                       coveraStr,
+                                       [r"$\mathbb{E}[" + legendStr[2]+r"(t,"+ legendStr[3] + ")]$",
+                                        r"$Q_{" + legendStr[2]+r"(t,"+ legendStr[3] + ")}(0.025)$",
+                                        r"$Q_{" + legendStr[2]+r"(t,"+ legendStr[3] + ")}(0.975)$"],
                                        xlabel = xlabel,
                                        xticksList = xticksList,
-                                       ylabel = 'd/dt ' + varStr,
-                                       msize = msize)
+                                       ylabel = 'd/dt ' + varStr)
             plotter.plot(vPlots, 
                          filename = varStr[1] + "_velPlots",
                          fig_size = figSize)
@@ -125,10 +120,10 @@ class plottingRoutine:
         if diffPlot:
             diffPlots = self.getDiffPlots(timeVec, 
                                           [curdiffStochastics[0],
-                                           curdiffStochastics[2],
-                                           curdiffStochastics[3]], 
-                                          ["mean", coveraStr + r" \%",# Samples",
-                                           coveraStr + r" \%" ],#Samples"],
+                                           curdiffStochastics[1]], 
+                                           [r"min${}_i (\varepsilon^{(i)})$",
+                                            r"max${}_i (\varepsilon^{(i)})$"],
+                                            legendStr[0],
                                            xlabel = xlabel,
                                            xticksList = xticksList)
             plotter.plot(diffPlots, 
@@ -153,119 +148,78 @@ class plottingRoutine:
                 samples = pickle.load(f)
 
             _, bin_edges = np.histogram(samples, bins='fd')
-            samplesPlot = HistPlot(samples, sampleStr[1], "nr. samples", 
-                                    bins = bin_edges, color='red')
+            samplesPlot = HistPlot(samples, sampleStr[1], "nr. samples",
+                                   bins = bin_edges)
             
             plotter.plot(samplesPlot,
                          filename = "Input_Distribution",
                          fig_size = figSize)
 
-
     def getPhasePlots(self,
-                      FgPCStochVar1: list, 
-                      FgPCStochVar2: list,
-                      varStr1: str, 
-                      varStr2: str, 
-                      idxTime: int,
-                      coveraStr: str, 
-                      plotter: Plotter, 
-                      timeVec: np.ndarray,
-                      figSize: tuple = (13, 9), 
-                      xlabel: str = "time",
-                      xticksList: list = None,
-                      msize: int = 7, 
-                      xlim: tuple = None, 
-                      ylim: tuple = None):
+                       posSamples: np.ndarray,
+                       velSamples: np.ndarray,
+                       posMean: np.ndarray,
+                       velMean: np.ndarray,
+                       varStr1: str, 
+                       varStr2: str,
+                       labelList: list,
+                       plotter: Plotter,
+                       figSize: tuple = (13, 9)):
         r"""
-        Method to plot the phase plot of two variables
+        Method to plot the phase plot of the samples
 
         Parameters
         ----------
-        FgPCStochVar1 : list
-            list with the mean, lower and upper bound of the first variable
-        FgPCStochVar2 : list
-            list with the mean, lower and upper bound of the second variable
+        posSamples : np.ndarray
+            position samples of the first variable
+        velSamples : np.ndarray
+            velocity samples of the second variable
+        posMean : np.ndarray
+            mean of the position samples
+        velMean : np.ndarray
+            mean of the velocity samples
         varStr1 : str
             string with the name of the first variable
         varStr2 : str
             string with the name of the second variable
-        idxTime : int
-            index of the time point to be plotted
-        coveraStr : str
-            string with the coverage of the confidence interval
+        labelList : list
+            list with the names of the mean variables
         plotter : Plotter
             object of the Plotter class to handle the plotting
-        timeVec : np.ndarray
-            time vector with time points of one period
         figSize : tuple, optional
             size of the figure, by default (13, 9)
-        xlabel : str, optional
-            label of the x-axis, by default "Time"
-        xticksList : list, optional
-            list with the x-ticks and labels, by default None
-        msize : int, optional
-            size of the markers, by default 7
-        xlim : tuple, optional
-            limits of the x-axis, by default None
-        ylim : tuple, optional
-            limits of the y-axis, by default None
         """
+        meanPlot = LinePlot(np.append(posMean,posMean[0]),
+                            np.append(velMean,velMean[0]),
+                            varStr1,varStr2, 
+                            color = "red", linestyle = "-", 
+                            label = labelList,
+                            linewidth = 0.8)
+        legendPlot = LinePlot(np.append(posMean,posMean[0]),
+                            np.append(velMean,velMean[0]),
+                            varStr1,varStr2,
+                              color = "black", linestyle = "-", 
+                              linewidth = 0.5, label = "samples")
+        samplePlots = [legendPlot]
+        for i in range(0,posSamples.shape[0]):
+            samplePlot = LinePlot(np.append(posSamples[i,:],posSamples[i,0]),
+                                np.append(velSamples[i,:],velSamples[i,0]),
+                                varStr1,varStr2, color = "black", linestyle = "-", 
+                                linewidth = 0.1, alpha = 0.3)
+            samplePlots.append(samplePlot)
+        samplePlots.append(meanPlot)
         
-        FgPCPhaseMean = LinePlot(FgPCStochVar1[0],FgPCStochVar2[0],varStr1,varStr2,
-                                color = "black", label = "FgPC mean", linestyle = "-")
-        FgPCPhaseLow = LinePlot(FgPCStochVar1[1],FgPCStochVar2[1],varStr1,varStr2,
-                                color = "red", label = coveraStr + r" \% samples", linestyle = "--") 
-        FgPCPhaseHigh = LinePlot(FgPCStochVar1[2],FgPCStochVar2[2],varStr1,varStr2,
-                                color = "blue", linestyle = "--")
-        
-        PhasePlots = [FgPCPhaseMean, FgPCPhaseLow, FgPCPhaseHigh]
-        
-        var1Plots = self.getVertTimePlots(timeVec,
-                                          FgPCStochVar1,
-                                          idxTime,
-                                          coveraStr,
-                                          xlabel = xlabel,
-                                          yticksList = xticksList,
-                                          ylabel = varStr1,
-                                          msize = msize)
-        
-        var2Plots = self.getTimePlots(timeVec,
-                                      FgPCStochVar2,
-                                      idxTime,
-                                      coveraStr,
-                                      xlabel = xlabel,
-                                      xticksList = xticksList,
-                                      ylabel = varStr2)
-        
-        helpPlot = LinePlot([],[],"","")
-
-        for i in range(3,len(var1Plots)-1):
-            del var1Plots[i].kwargs['label']
-            del PhasePlots[i].kwargs['label']
-
-        plotter.plot(helpPlot,var2Plots,var1Plots,PhasePlots,
+        plotter.plot(samplePlots,
                      filename = varStr1[1] + "_" + varStr2[1] + "_phasePlot",
                      fig_size = figSize)
-        
-        if xlim is not None:
-            PhasePlotsZoom = copy.deepcopy(PhasePlots)
-            for plot in PhasePlotsZoom:
-                plot.xlim = xlim
-                plot.ylim = ylim
-            plotter.plot(PhasePlotsZoom,
-                         filename = varStr1[1] + "_" + varStr2[1] + "_phasePlotZoom",
-                         fig_size = figSize)
-
 
     def getTimePlots(self, 
                      time: np.ndarray, 
                      curFgPCStochastics: list, 
-                     idxTime: int,
-                     coveraStr: str, 
+                     labelList: list = None, 
                      xlabel: str = "time",
                      xticksList: list = None,
-                     ylabel: str = 'y',
-                     msize: int = 10):
+                     ylabel: str = 'y'):
         r"""
         Method to get the variable over time plots
 
@@ -275,8 +229,6 @@ class plottingRoutine:
             time vector with time points over one period
         curFgPCStochastics : list
             list with the mean, lower and upper bound of the variable
-        idxTime : int
-            index of the time point to be plotted
         coveraStr : str
             string with the coverage of the confidence interval
         xlabel : str, optional
@@ -285,8 +237,6 @@ class plottingRoutine:
             list with the x-ticks and labels, by default None
         ylabel : str, optional
             label of the y-axis, by default 'y'
-        msize : int, optional
-            size of the markers, by default 10
         
         Returns
         ----------
@@ -294,13 +244,21 @@ class plottingRoutine:
             list with the LinePlot objects
         """
 
-        FgPCxMean = LinePlot(time, curFgPCStochastics[0], xlabel, ylabel,
-                        color = "black", label = "FgPC mean", linestyle = "-")
-        FgPCxLow = LinePlot(time, curFgPCStochastics[1], xlabel, ylabel,
-                            color = "red", label = coveraStr + r" \% samples", linestyle = "--")
-        FgPCxHigh = LinePlot(time, curFgPCStochastics[2], xlabel, ylabel,
-                            color = "blue", linestyle = "--")
-        
+        if labelList is None:
+            FgPCxMean = LinePlot(time, curFgPCStochastics[0], xlabel, ylabel,
+                            color = "black", linestyle = "-")
+            FgPCxLow = LinePlot(time, curFgPCStochastics[1], xlabel, ylabel,
+                                color = "red", linestyle = "--")
+            FgPCxHigh = LinePlot(time, curFgPCStochastics[2], xlabel, ylabel,
+                                color = "blue", linestyle = "--")
+        else:
+            FgPCxMean = LinePlot(time, curFgPCStochastics[0], xlabel, ylabel,
+                        color = "black", label = labelList[0], linestyle = "-")
+            FgPCxLow = LinePlot(time, curFgPCStochastics[1], xlabel, ylabel,
+                                color = "red", label = labelList[1], linestyle = "--")
+            FgPCxHigh = LinePlot(time, curFgPCStochastics[2], xlabel, ylabel,
+                                color = "blue", label = labelList[2], linestyle = "--")
+            
         xPlots = [FgPCxMean, FgPCxLow, FgPCxHigh]
         
         if xticksList is not None:
@@ -309,64 +267,12 @@ class plottingRoutine:
                 plot.xticksLabelList = xticksList[1]
 
         return xPlots
-    
-    def getVertTimePlots(self, 
-                         time: np.ndarray, 
-                         curFgPCStochastics: list, 
-                         idxTime: int, 
-                         coveraStr: str, 
-                         xlabel: str = "time",
-                         ylabel: str = 'y', 
-                         yticksList: list = None,
-                         msize: int = 10):
-        r"""
-        Method to make a plot wiht the time over variable
-
-        Parameters
-        ----------
-        time : np.ndarray
-            time vector with time points over one period
-        curFgPCStochastics : list
-            list with the mean, lower and upper bound of the variable
-        idxTime : int
-            index of the time point to be plotted
-        coveraStr : str
-            string with the coverage of the confidence interval
-        xlabel : str, optional
-            label of the x-axis, by default "Time"
-        ylabel : str, optional
-            label of the y-axis, by default 'y'
-        yticksList : list, optional
-            list with the y-ticks and labels, by default None
-        msize : int, optional
-            size of the markers, by default 10
-        
-        Returns
-        ----------
-        xPlots : list
-            list with the LinePlot objects
-        """
-
-        FgPCxMean = LinePlot(curFgPCStochastics[0], time, ylabel, xlabel,
-                        color = "black", label = "FgPC mean", linestyle = "-")
-        FgPCxLow = LinePlot(curFgPCStochastics[1], time, ylabel, xlabel,
-                            color = "red", label = coveraStr + r" \% samples", linestyle = "--")
-        FgPCxHigh = LinePlot(curFgPCStochastics[2], time, ylabel, xlabel,
-                            color = "blue", linestyle = "--")
-        
-        xPlots = [FgPCxMean, FgPCxLow, FgPCxHigh]
-
-        if yticksList is not None:
-            for plot in xPlots:
-                plot.yticksList = yticksList[0]
-                plot.yticksLabelList = yticksList[1]
-        
-        return xPlots
 
     def getDiffPlots(self, 
                      time: np.ndarray, 
                      diffStoch: list, 
                      labels: str, 
+                     varStr: str,
                      xlabel: str = "time", 
                      xticksList: list = None):
         r"""
@@ -393,13 +299,19 @@ class plottingRoutine:
             list with the LinePlot objects
         """
 
-        colorList = ["black", "red", "blue"]
-        lineStyleList = ['-','--','--']
+        colorList = ["red", "blue"]
+        lineStyleList = ['-','-']
         diffPlotList = []
         for idx in range(len(diffStoch)):
-            diffPlot = LinePlot(time, diffStoch[idx], xlabel, "difference",
+            # replace Zero with machine precision
+            vals = diffStoch[idx]
+            vals[np.abs(vals) <= sys.float_info.epsilon] = sys.float_info.epsilon        
+
+            diffPlot = LinePlot(time, vals, 
+                                xlabel, r"$\varepsilon^{(i)}(t)=|\tilde{" + varStr+ r"}^{(i)}(t)-" + varStr+ r"^{(i)}(t)|$",
                                 color = colorList[idx],
                                 linestyle = lineStyleList[idx],
+                                linewidth = 1.0,
                                 label = labels[idx])
             if xticksList is not None:
                 diffPlot.xticksList = xticksList[0]
@@ -442,7 +354,8 @@ class plottingRoutine:
         _, bin_edges = np.histogram(np.concatenate([FgPCSamples,mcSamples]), bins='fd')
         
         FgPC_histPlot = HistPlot(FgPCSamples, xLabel, "nr. samples", 
-                                vline=[mean, upBd, lowBd],
+                                vline=[[mean, upBd, lowBd],
+                                        ['black','blue','red']],
                                 bins = bin_edges, color='blue', 
                                 alpha=1.0, label='FgPC')
         mc_histPlot = HistPlot(mcSamples, xLabel, "nr. samples", 
@@ -537,8 +450,7 @@ class plottingRoutine:
                        forced: bool):
 
         coeffTensor = np.zeros((varNr, h+1, ngPC))
-        # coeffTensor = np.zeros((varNr, 2*h+1, ngPC))
-
+        
         baseIdx = 0
         for idxVar in range(varNr):
 

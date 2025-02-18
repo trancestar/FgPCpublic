@@ -11,6 +11,7 @@ figure.titlesize: 9
 font.family : 'serif'
 font.size: 9
 text.usetex : True
+text.latex.preamble : \usepackage{amsfonts}
 
 ### --- Lines --- ###
 lines.linewidth : 1.5

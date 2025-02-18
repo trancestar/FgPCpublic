@@ -8,7 +8,8 @@ ytick.labelsize : 14
 # Type
 font.family : sans-serif
 font.sans-serif : Arial
-text.usetex : False
+text.usetex : True
+text.latex.preamble : \usepackage{amsfonts}
 
 ### --- Lines --- ###
 lines.linewidth : 2

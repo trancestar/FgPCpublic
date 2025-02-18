@@ -38,7 +38,7 @@ systemStr = "Duffing"
 deflationBool = False
 
 convergenceStudy = True
-confCoverage = 0.95
+confCoverage = 95
 
 # result folder
 if systemVal==1:
@@ -198,11 +198,13 @@ if os.path.exists(stochasticStr):
     diffStochasticList = stochastics[2]
     FgPCsamplingList = stochastics[3]
     mcsamplingList = stochastics[4]
+    diffMinMaxList = stochastics[5]
+    posVelFgPC = stochastics[6]
 
 else:
 
     FgPCStochasticList, mcStochasticList, diffStochasticList, \
-        FgPCsamplingList, mcsamplingList = \
+        FgPCsamplingList, mcsamplingList, diffMinMaxList, posVelFgPC = \
                 mySamplingModel.getStochastics(myDuffingFgPC,
                                             FgPCResultList,
                                             mcResultList,
@@ -217,7 +219,9 @@ else:
                      mcStochasticList, 
                      diffStochasticList,
                      FgPCsamplingList,
-                     mcsamplingList], f)
+                     mcsamplingList,
+                     diffMinMaxList, 
+                     posVelFgPC], f)
         
 # -------------------
 # --- Convergence ---
@@ -292,24 +296,17 @@ myPlottingRoutine.plotCoeffMap(FgPCSolList[0],
                                figSize=(12,7.5))
 
 distrList = [sampleStr, r"$\alpha$"]
-confCoverageStr = str(int(confCoverage*100))
 varIdx = 0
 for tagStr, solIdx in zip(tagList, range(len(tagList))):
 
-    if tagStr == "small":
-        idxTime = 0
-    elif tagStr == "unstable":
-        idxTime = 450
-    else:
-        idxTime = 900
-    
     # assign data
     curPosFgPCResult = FgPCsamplingList[solIdx][varIdx]
     curPosmcResult = mcsamplingList[solIdx][varIdx]
 
     curFgPCStochastics = FgPCStochasticList[solIdx][varIdx]
     curmcStochastics = mcStochasticList[solIdx][varIdx]
-    curdiffStochastics = diffStochasticList[solIdx][varIdx]
+    curdiffStochastics = diffMinMaxList[solIdx][varIdx]
+    posVelFgPC = posVelFgPC[solIdx][varIdx]
 
     # plots the position and, if selected, velocity of the FgPC solution,
     # difference of the FgPC and Monte Carlo solutions, 
@@ -320,12 +317,11 @@ for tagStr, solIdx in zip(tagList, range(len(tagList))):
                                       curFgPCStochastics,
                                       curdiffStochastics,
                                       timeVec,
-                                      idxTime,
                                       samplingTimes,
                                       samplingTimeIdxList,
-                                      confCoverageStr,
                                       plotter,
                                       r'$x$',
+                                      [r'x', r'\alpha',r'v', r'\alpha'],
                                       velPlot = True,
                                       diffPlot = True,
                                       sampleStr = distrList,
@@ -333,15 +329,12 @@ for tagStr, solIdx in zip(tagList, range(len(tagList))):
     
     distrList = None
 
-    # plots the phase plots of the FgPC solution
-    myPlottingRoutine.getPhasePlots([curFgPCStochastics[0],
-                                     curFgPCStochastics[2],
-                                     curFgPCStochastics[3]],
-                                    [curFgPCStochastics[1],
-                                     curFgPCStochastics[4],
-                                     curFgPCStochastics[5]],
-                                    r'$x$', r'$v$', idxTime, 
-                                    confCoverageStr, plotter,
-                                    timeVec,
-                                    figSize = (13.5,9)
+    myPlottingRoutine.getPhasePlots(posVelFgPC[0],
+                                    posVelFgPC[1],
+                                    curFgPCStochastics[0],
+                                    curFgPCStochastics[1],
+                                    r'$x$', r'$v$', 
+                                    r"$\left(\mathbb{E}[x(t,\alpha)],\mathbb{E}[v(t,\alpha)]\right)$",
+                                    plotter,
+                                    figSize = (10,7)
                                     )

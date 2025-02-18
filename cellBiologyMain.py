@@ -32,7 +32,7 @@ from cellBiologyFgPC.utils.argparser import get_config_Integration, get_config_F
 deflationBool = False
 
 convergenceStudy = True
-confCoverage = 0.95
+confCoverage = 95
 
 systemStr = "CellBiology"
 varList = ["V", "n", "Ca"]
@@ -174,11 +174,13 @@ if os.path.exists(stochasticStr):
     diffStochasticList = stochastics[2]
     FgPCsamplingList = stochastics[3]
     mcsamplingList = stochastics[4]
+    diffMinMaxList = stochastics[5]
+    posVelFgPCList = stochastics[6]
 
 else:
 
     FgPCStochasticList, mcStochasticList, diffStochasticList, \
-        FgPCsamplingList, mcsamplingList = \
+        FgPCsamplingList, mcsamplingList, diffMinMaxList, posVelFgPCList = \
                 mySamplingModel.getStochastics(myBetaCellFgPC,
                                             FgPCResultList,
                                             mcResultList,
@@ -192,7 +194,9 @@ else:
                      mcStochasticList, 
                      diffStochasticList,
                      FgPCsamplingList,
-                     mcsamplingList], f)
+                     mcsamplingList,
+                     diffMinMaxList, 
+                     posVelFgPCList], f)
         
 # -------------------
 # --- Convergence ---
@@ -268,7 +272,6 @@ myPlottingRoutine.plotCoeffMap(FgPCSolList[0][0],
                                plotter=plotter,
                                figSize=(12,7.5))
 
-
 velPlotBool = False
 diffPlotBool = True
 xlabelCell = "normalized time"
@@ -278,7 +281,13 @@ xticksList = [
 ]
 distrList = [sampleStr,"ATP"]
 varListScale = [r"$V$ in mV", r"$n$ in [-]", r"$Ca$ in mM"]
-confCoverageStr = str(int(confCoverage*100))
+labelList = [[r"V", r"ATP", 
+             r"\dot{V}", r"ATP"], 
+             [r"n", r"ATP",
+              r"\dot{n}", r"ATP"],
+             [r"Ca", r"ATP",
+              r"\dot{Ca}", r"ATP"]]
+
 figSize = (7,5)
 
 for tagStr, solIdx in zip(tagList, range(len(tagList))):
@@ -289,11 +298,10 @@ for tagStr, solIdx in zip(tagList, range(len(tagList))):
 
     curFgPCStochasticsList = FgPCStochasticList[solIdx]
     curmcStochasticsList = mcStochasticList[solIdx]
-    curdiffStochasticsList = diffStochasticList[solIdx]
+    curdiffStochasticsList = diffMinMaxList[solIdx]
+    curposVelFgPCList = posVelFgPCList[solIdx]
 
     for varIdx in range(len(varList)):
-
-        idxTime = 900
 
         curPosVarFgPCResult = curPosFgPCResultList[varIdx]
         curPosVarmcResult = curPosmcResultList[varIdx]
@@ -310,12 +318,11 @@ for tagStr, solIdx in zip(tagList, range(len(tagList))):
                                         curFgPCStochastics,
                                         curdiffStochastics,
                                         timeVec,
-                                        idxTime,
                                         samplingTimes,
                                         samplingTimeIdxList,
-                                        confCoverageStr,
                                         plotter,
                                         varListScale[varIdx],
+                                        labelList[varIdx],
                                         figSize = figSize,
                                         xlabel = xlabelCell,
                                         xticksList = xticksList,
@@ -327,18 +334,14 @@ for tagStr, solIdx in zip(tagList, range(len(tagList))):
         diffPlotBool = False
         distrList = None
 
-    # plots the phase plots of the FgPC solution
-    myPlottingRoutine.getPhasePlots([curFgPCStochasticsList[0][0],
-                                    curFgPCStochasticsList[0][2],
-                                    curFgPCStochasticsList[0][3]],
-                                    [curFgPCStochasticsList[1][0],
-                                    curFgPCStochasticsList[1][2],
-                                    curFgPCStochasticsList[1][3]],
-                                    varListScale[0], varListScale[1], idxTime, 
-                                    confCoverageStr, plotter,
-                                    timeVec,
-                                    figSize = (13.5,9), xlabel = xlabelCell,
-                                    xticksList = xticksList,
+    myPlottingRoutine.getPhasePlots(curposVelFgPCList[0][0],
+                                    curposVelFgPCList[1][0],
+                                    curFgPCStochasticsList[0][0],
+                                    curFgPCStochasticsList[1][0],
+                                    varListScale[0], varListScale[1], 
+                                    r"$\left(\mathbb{E}[V(t,ATP)],\mathbb{E}[n(t,ATP)]\right)$",
+                                    plotter,
+                                    figSize = (10,7)
                                     )
     
     # plots the histogram of the base frequency of the FgPC solution
